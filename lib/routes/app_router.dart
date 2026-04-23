@@ -30,11 +30,18 @@ final router = GoRouter(
     GoRoute(
       path: '/establecimientos/:id',
       builder: (context, state) {
+        // CORRECCIÓN: blindar contra el valor literal "nuevo"
+        final rawId = state.pathParameters['id'] ?? '';
+        if (rawId == 'nuevo') {
+          return const EstablecimientoFormView(establecimiento: null);
+        }
+
         final est = state.extra;
         if (est is Establecimiento) {
           return EstablecimientoDetailView(establecimiento: est);
         }
-        final id = int.tryParse(state.pathParameters['id'] ?? '');
+
+        final id = int.tryParse(rawId);
         if (id == null) {
           return const Scaffold(
             body: Center(child: Text('ID inválido')),
@@ -46,11 +53,13 @@ final router = GoRouter(
     GoRoute(
       path: '/establecimientos/:id/editar',
       builder: (context, state) {
+        final rawId = state.pathParameters['id'] ?? '';
         final est = state.extra;
         if (est is Establecimiento) {
           return EstablecimientoFormView(establecimiento: est);
         }
-        final id = int.tryParse(state.pathParameters['id'] ?? '');
+
+        final id = int.tryParse(rawId);
         if (id == null) {
           return const Scaffold(
             body: Center(child: Text('ID inválido')),

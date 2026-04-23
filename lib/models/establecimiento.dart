@@ -44,7 +44,7 @@ class Establecimiento {
       'avatar', 'picture', 'img',
     ]);
 
-    print('📦 fromJson - Keys: ${json.keys.toList()}');
+    print('fromJson - Keys: ${json.keys.toList()}');
     print('   → nombre: "$nombre", nit: "$nit", id: $parsedId');
 
     return Establecimiento(

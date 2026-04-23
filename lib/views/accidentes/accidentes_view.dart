@@ -30,21 +30,21 @@ class _AccidentesViewState extends State<AccidentesView> {
       _error = null;
     });
     try {
-      print('🔄 Cargando accidentes...');
+      print('Cargando accidentes...');
       final service = AccidentesService();
       final accidentes = await service.fetchAccidentes();
       print('✓ ${accidentes.length} accidentes cargados');
       
       print('🚀 Procesando estadísticas con Isolate...');
       final stats = await service.computeStats(accidentes);
-      print('✅ Estadísticas procesadas exitosamente');
+      print('Estadísticas procesadas exitosamente');
       print('   - Total: ${stats.total}');
       print('   - Clases: ${stats.porClase.keys.toList()}');
       print('   - Top barrios: ${stats.topBarrios.keys.toList()}');
       
       if (mounted) setState(() { _stats = stats; _loading = false; });
     } catch (e) {
-      print('❌ Error: $e');
+      print('Error: $e');
       if (mounted) setState(() { _error = e.toString(); _loading = false; });
     }
   }

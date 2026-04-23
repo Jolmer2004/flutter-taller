@@ -1,49 +1,27 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import '../config/env.dart';
 import '../models/establecimiento.dart';
 
 class EstablecimientosService {
-  /// En web usamos un proxy CORS para evitar el bloqueo del browser.
-  /// En desktop/mobile se usa la URL directa de la API.
-  static String get _effectiveBaseUrl {
-    if (kIsWeb) {
-      final encoded = Uri.encodeComponent(Env.parkingUrl);
-      return 'https://corsproxy.io/?url=$encoded';
-    }
-    return Env.parkingUrl;
-  }
-
-  /// En web las rutas van como query param adicional del proxy,
-  /// así que el baseUrl ya contiene la URL completa de la API.
-  /// Necesitamos construir la URL final de forma diferente en web.
-  String _buildUrl(String path) {
-    if (kIsWeb) {
-      final encoded = Uri.encodeComponent('${Env.parkingUrl}$path');
-      return 'https://corsproxy.io/?url=$encoded';
-    }
-    return path;
-  }
-
-  Dio get _dio => Dio(BaseOptions(
-        baseUrl: kIsWeb ? '' : Env.parkingUrl,
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
-        headers: {
-          'Accept': 'application/json',
-        },
-        validateStatus: (status) => status != null && status >= 200 && status < 300,
-      ));
+  final Dio _dio = Dio(BaseOptions(
+    baseUrl: Env.parkingUrl,
+    connectTimeout: const Duration(seconds: 15),
+    receiveTimeout: const Duration(seconds: 15),
+    headers: {
+      'Accept': 'application/json',
+    },
+    validateStatus: (status) => status != null && status >= 200 && status < 300,
+  ));
 
   String get _base => '/establecimientos';
 
   /// GET /establecimientos
   Future<List<Establecimiento>> getAll() async {
     try {
-      final url = _buildUrl(_base);
-      print('GET $_base');
-      print('URL completa: $url');
+      final url = '$_base';
+      print('GET $url');
+      print('URL completa: ${Env.parkingUrl}$_base');
 
       final response = await _dio.get<dynamic>(url);
 
@@ -140,8 +118,8 @@ class EstablecimientosService {
   /// GET /establecimientos/{id}
   Future<Establecimiento> getOne(int id) async {
     try {
-      final url = _buildUrl('$_base/$id');
-      print('GET $_base/$id');
+      final url = '$_base/$id';
+      print('GET $url');
       final response = await _dio.get<dynamic>(url);
       final data = response.data;
       print('getOne data: $data');
@@ -164,7 +142,6 @@ class EstablecimientosService {
     File? logo,
   }) async {
     try {
-      final url = _buildUrl(_base);
       print('POST $_base');
       final formData = FormData.fromMap({
         'nombre': nombre,
@@ -177,7 +154,7 @@ class EstablecimientosService {
             filename: logo.path.split('/').last,
           ),
       });
-      final response = await _dio.post(url, data: formData);
+      final response = await _dio.post(_base, data: formData);
       print('✓ Crear status: ${response.statusCode}');
       print('✓ Crear response: ${response.data}');
     } on DioException catch (e) {
@@ -187,7 +164,7 @@ class EstablecimientosService {
     }
   }
 
-  /// POST /establecimiento-update/{id} (_method=PUT, multipart/form-data)
+  /// POST /establecimiento-update/{id} (multipart/form-data, sin _method)
   Future<void> update({
     required int id,
     required String nombre,
@@ -197,10 +174,9 @@ class EstablecimientosService {
     File? logo,
   }) async {
     try {
-      final url = _buildUrl('/establecimiento-update/$id');
-      print('POST /establecimiento-update/$id');
+      final url = '/establecimiento-update/$id';
+      print('POST $url');
       final formData = FormData.fromMap({
-        '_method': 'PUT',
         'nombre': nombre,
         'nit': nit,
         'direccion': direccion,
@@ -223,8 +199,8 @@ class EstablecimientosService {
   /// DELETE /establecimientos/{id}
   Future<void> delete(int id) async {
     try {
-      final url = _buildUrl('$_base/$id');
-      print('DELETE $_base/$id');
+      final url = '$_base/$id';
+      print('DELETE $url');
       final response = await _dio.delete(url);
       print('✓ Delete status: ${response.statusCode}');
     } on DioException catch (e) {

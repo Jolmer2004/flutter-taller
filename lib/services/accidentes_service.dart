@@ -14,7 +14,7 @@ class AccidentesService {
   Future<List<Accidente>> fetchAccidentes() async {
     try {
       final url = '${Env.baseUrl}/ezt8-5wyj.json';
-      print('📥 Solicitando accidentes desde: $url');
+      print('Solicitando accidentes desde: $url');
 
       final response = await _dio.get<dynamic>(
         url,
@@ -39,17 +39,16 @@ class AccidentesService {
   }
 
   Future<AccidentesStats> computeStats(List<Accidente> accidentes) async {
-    print('🚀 Iniciando procesamiento con compute()...');
+    print('Iniciando procesamiento con compute()...');
     try {
       return await compute(_calcularStats, accidentes);
     } catch (e) {
-      print('⚠️  Fallback al hilo principal: $e');
+      print('Fallback al hilo principal: $e');
       return _calcularStats(accidentes);
     }
   }
 }
 
-// ─── Función global para compute() ───────────────────────────────────────────
 
 AccidentesStats _calcularStats(List<Accidente> accidentes) {
   final startMs = DateTime.now().millisecondsSinceEpoch;

@@ -4,10 +4,38 @@ import '../../models/establecimiento.dart';
 import '../../services/establecimientos_service.dart';
 import '../../themes/app_theme.dart';
 
-class EstablecimientoDetailView extends StatelessWidget {
+class EstablecimientoDetailView extends StatefulWidget {
   final Establecimiento establecimiento;
 
   const EstablecimientoDetailView({required this.establecimiento, super.key});
+
+  @override
+  State<EstablecimientoDetailView> createState() =>
+      _EstablecimientoDetailViewState();
+}
+
+class _EstablecimientoDetailViewState extends State<EstablecimientoDetailView> {
+  late Establecimiento _est;
+  bool _reloading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _est = widget.establecimiento;
+  }
+
+  Future<void> _recargar() async {
+    if (_est.id == null) return;
+    setState(() => _reloading = true);
+    try {
+      final updated = await EstablecimientosService().getOne(_est.id!);
+      if (mounted) setState(() => _est = updated);
+    } catch (_) {
+      // si falla la recarga, mantiene los datos anteriores
+    } finally {
+      if (mounted) setState(() => _reloading = false);
+    }
+  }
 
   Future<void> _confirmarEliminar(BuildContext context) async {
     final ok = await showDialog<bool>(
@@ -21,7 +49,7 @@ class EstablecimientoDetailView extends StatelessWidget {
         title: const Text('Eliminar establecimiento',
             style: TextStyle(color: AppTheme.textoOscuro)),
         content: Text(
-            '¿Estás seguro de que deseas eliminar "${establecimiento.nombre}"? Esta acción no se puede deshacer.',
+            '¿Estás seguro de que deseas eliminar "${_est.nombre}"? Esta acción no se puede deshacer.',
             style: const TextStyle(color: AppTheme.textoGris)),
         actions: [
           TextButton(
@@ -42,14 +70,15 @@ class EstablecimientoDetailView extends StatelessWidget {
 
     if (ok == true) {
       try {
-        await EstablecimientosService().delete(establecimiento.id!);
+        await EstablecimientosService().delete(_est.id!);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Establecimiento eliminado correctamente'),
               backgroundColor: AppTheme.acento,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
           context.go('/establecimientos');
@@ -61,7 +90,8 @@ class EstablecimientoDetailView extends StatelessWidget {
                 content: Text('Error al eliminar: $e'),
                 backgroundColor: AppTheme.peligro,
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10))),
           );
         }
       }
@@ -74,7 +104,7 @@ class EstablecimientoDetailView extends StatelessWidget {
       backgroundColor: AppTheme.fondo,
       appBar: AppBar(
         title: Text(
-          establecimiento.nombre,
+          _est.nombre,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(color: AppTheme.textoOscuro),
         ),
@@ -84,32 +114,45 @@ class EstablecimientoDetailView extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_rounded, color: AppTheme.acento),
-            tooltip: 'Editar',
-            onPressed: () async {
-              await context.push(
-                '/establecimientos/${establecimiento.id}/editar',
-                extra: establecimiento,
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.delete_rounded, color: AppTheme.peligro.withOpacity(0.8)),
-            tooltip: 'Eliminar',
-            onPressed: () => _confirmarEliminar(context),
-          ),
+          if (_reloading)
+            const Padding(
+              padding: EdgeInsets.all(14),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else ...[
+            IconButton(
+              icon: const Icon(Icons.edit_rounded, color: AppTheme.acento),
+              tooltip: 'Editar',
+              onPressed: () async {
+                await context.push(
+                  '/establecimientos/${_est.id}/editar',
+                  extra: _est,
+                );
+                // CORRECCIÓN: recargar datos tras editar
+                if (mounted) await _recargar();
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.delete_rounded,
+                  color: AppTheme.peligro.withOpacity(0.8)),
+              tooltip: 'Eliminar',
+              onPressed: () => _confirmarEliminar(context),
+            ),
+          ],
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (establecimiento.logoUrl != null &&
-              establecimiento.logoUrl!.isNotEmpty) ...[
+          if (_est.logoUrl != null && _est.logoUrl!.isNotEmpty) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.network(
-                establecimiento.logoUrl!,
+                _est.logoUrl!,
                 height: 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -121,7 +164,8 @@ class EstablecimientoDetailView extends StatelessWidget {
                     border: Border.all(color: AppTheme.borde),
                   ),
                   child: const Center(
-                    child: Icon(Icons.store_rounded, size: 60, color: AppTheme.acento),
+                    child:
+                        Icon(Icons.store_rounded, size: 60, color: AppTheme.acento),
                   ),
                 ),
               ),
@@ -136,7 +180,8 @@ class EstablecimientoDetailView extends StatelessWidget {
                 border: Border.all(color: AppTheme.borde),
               ),
               child: const Center(
-                child: Icon(Icons.store_rounded, size: 60, color: AppTheme.acento),
+                child:
+                    Icon(Icons.store_rounded, size: 60, color: AppTheme.acento),
               ),
             ),
             const SizedBox(height: 16),
@@ -150,13 +195,16 @@ class EstablecimientoDetailView extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _DetailRow(label: 'Nombre', value: establecimiento.nombre),
-                const Divider(height: 1, indent: 16, endIndent: 16, color: AppTheme.borde),
-                _DetailRow(label: 'NIT', value: establecimiento.nit),
-                const Divider(height: 1, indent: 16, endIndent: 16, color: AppTheme.borde),
-                _DetailRow(label: 'Dirección', value: establecimiento.direccion),
-                const Divider(height: 1, indent: 16, endIndent: 16, color: AppTheme.borde),
-                _DetailRow(label: 'Teléfono', value: establecimiento.telefono),
+                _DetailRow(label: 'Nombre', value: _est.nombre),
+                const Divider(
+                    height: 1, indent: 16, endIndent: 16, color: AppTheme.borde),
+                _DetailRow(label: 'NIT', value: _est.nit),
+                const Divider(
+                    height: 1, indent: 16, endIndent: 16, color: AppTheme.borde),
+                _DetailRow(label: 'Dirección', value: _est.direccion),
+                const Divider(
+                    height: 1, indent: 16, endIndent: 16, color: AppTheme.borde),
+                _DetailRow(label: 'Teléfono', value: _est.telefono),
               ],
             ),
           ),
@@ -185,9 +233,11 @@ class EstablecimientoDetailView extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     await context.push(
-                      '/establecimientos/${establecimiento.id}/editar',
-                      extra: establecimiento,
+                      '/establecimientos/${_est.id}/editar',
+                      extra: _est,
                     );
+                    // CORRECCIÓN: recargar datos tras editar
+                    if (mounted) await _recargar();
                   },
                   icon: const Icon(Icons.edit_rounded, size: 18),
                   label: const Text('Editar'),
@@ -214,7 +264,8 @@ class EstablecimientoDetailView extends StatelessWidget {
               label: const Text('Eliminar establecimiento'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.peligro,
-                side: BorderSide(color: AppTheme.peligro.withOpacity(0.6), width: 1.5),
+                side:
+                    BorderSide(color: AppTheme.peligro.withOpacity(0.6), width: 1.5),
                 padding: const EdgeInsets.symmetric(vertical: 13),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
