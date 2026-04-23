@@ -1,17 +1,30 @@
-# datos_colombia
+* Datos Abiertos Colombia — Flutter
 
-A new Flutter project.
+Estudiantes: Jolmer Alexander Viedma Agudelo
 
-## Getting Started
+Aplicación Flutter que consume la API pública api-colombia.com mostrando información geográfica y turística del país mediante Dashboard, Listado y Detalle.
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+* Dashboard
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+1. El usuario abre la app y ve 4 cards temáticas.
+2. Cada card muestra un icono, título y subtítulo del endpoint.
+3. Al tocar una card, go_router navega a "/list/:endpoint".
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
+* Listado — "ListView.builder" ("/list/:endpoint")
+
+- La vista recibe el "endpoint" como path parameter de go_router.
+- "ApiService" realiza el "GET" a "https://api-colombia.com/api/v1/{endpoint}".
+- "FutureBuilder" gestiona tres estados:
+  - **Cargando: "CircularProgressIndicator" + texto "Cargando datos..."
+  - **Error: icono "wifi_off" + mensaje + botón *Volver al inicio*
+  - Éxito: contador de resultados + "ListView.builder" con cada ítem
+- Al tocar un ítem, navega a "/detail" pasando el Map JSON completo via "extra".
+
+* Detalle — Maestro-Detalle ("/detail")
+
+1. El usuario toca un ítem del listado.
+2. "go_router" recibe el "Map<String, dynamic>" completo via "extra".
+3. La vista itera sobre las claves del JSON y muestra cada campo del registro.
