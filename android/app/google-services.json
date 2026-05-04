@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "825934336718",
+    "project_id": "distribucion-dbb3e",
+    "storage_bucket": "distribucion-dbb3e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:825934336718:android:82f6fddb0d6548e0ccf69f",
+        "android_client_info": {
+          "package_name": "com.example.distribucion_apk"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACf7eiGplSxQ5gqvVPJoit-Lg9GFb4ajg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
