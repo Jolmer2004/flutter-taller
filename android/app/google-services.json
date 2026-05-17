@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "771663024305",
+    "firebase_url": "https://integracion-8b736-default-rtdb.firebaseio.com",
+    "project_id": "integracion-8b736",
+    "storage_bucket": "integracion-8b736.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:771663024305:android:ec7e7855888cd0984c5290",
+        "android_client_info": {
+          "package_name": "com.example.firabase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfYMFB3lDyT9DcjdrQH-PvmTxuMhlVFn4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
